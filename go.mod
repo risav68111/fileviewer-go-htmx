@@ -1,4 +1,4 @@
-module github/risav68111/filesviewer-go-htmx
+module github.com/risav68111/filesviewer-go-htmx
 
 go 1.25.4
 

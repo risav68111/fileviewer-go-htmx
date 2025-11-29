@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"filesviewer/internal/handlers"
+  "github.com/risav68111/filesviewer-go-htmx/internal/handlers"
 	"github.com/gin-gonic/gin"
 )
 
