@@ -1,0 +1,138 @@
+<div style="padding: 15px; font-family: Arial, sans-serif; background: white; min-height: 100%;">
+    <div style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span>
+            {{ .filename }}
+        </h2>
+    </div>
+
+    {{ if .error }}
+        <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #dc3545;">
+            <strong>Error:</strong> {{ .error }}
+        </div>
+    {{ else if .sheets }}
+        <!-- Sheets Navigation (only show if multiple sheets) -->
+        {{ if gt (len .sheets) 1 }}
+        <div style="margin-bottom: 15px; padding: 12px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+            <label style="font-weight: bold; margin-right: 10px; color: #495057;">📑 Sheet:</label>
+            <select id="sheetSelector" onchange="switchSheet(this.value)" style="padding: 8px; border-radius: 4px; border: 1px solid #007bff; background: white; color: #495057; font-size: 13px;">
+                {{ range $index, $sheet := .sheets }}
+                <option value="{{ $index }}" {{ if eq $index 0 }}selected{{ end }}>
+                    {{ $sheet.SheetName }} ({{ $sheet.RowCount }} rows)
+                </option>
+                {{ end }}
+            </select>
+        </div>
+        {{ end }}
+
+        <!-- Sheets Display -->
+        {{ range $index, $sheet := .sheets }}
+        <div id="sheet-{{ $index }}" class="sheet-container" {{ if ne $index 0 }}style="display: none;"{{ end }}>
+            <!-- Sheet Header -->
+            <div style="background: #28a745; color: white; padding: 12px 15px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px;">
+                    📋 {{ $sheet.SheetName }}
+                    <span style="font-size: 12px; opacity: 0.9;">
+                        ({{ $sheet.RowCount }} rows, {{ len $sheet.Headers }} columns)
+                    </span>
+                </h3>
+                {{ if gt (len $.sheets) 1 }}
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 11px;">
+                    {{ add $index 1 }}/{{ len $.sheets }}
+                </span>
+                {{ end }}
+            </div>
+
+            {{ if gt $sheet.RowCount 0 }}
+            <!-- Data Table -->
+            <div style="overflow-x: auto; border: 1px solid #e9ecef; border-top: none; border-radius: 0 0 6px 6px;">
+                <table style="width: 100%; border-collapse: collapse; min-width: 600px; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #495057; color: white;">
+                            <th style="border: 1px solid #dee2e6; padding: 10px; text-align: center; width: 40px; font-size: 12px;">
+                                #
+                            </th>
+                            {{ range $sheet.Headers }}
+                            <th style="border: 1px solid #dee2e6; padding: 10px; text-align: left; font-size: 12px;">
+                                {{ . }}
+                            </th>
+                            {{ end }}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range $rowIndex, $row := $sheet.Data }}
+                        <tr style="{{ if even $rowIndex }}background: #f8f9fa;{{ else }}background: white;{{ end }}">
+                            <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; font-weight: bold; color: #6c757d; background: #e9ecef; font-size: 12px;">
+                                {{ add $rowIndex 1 }}
+                            </td>
+                            {{ range $header := $sheet.Headers }}
+                            <td style="border: 1px solid #dee2e6; padding: 8px; color: #495057; font-size: 12px;">
+                                {{ index $row $header }}
+                            </td>
+                            {{ end }}
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+            {{ else }}
+            <div style="padding: 30px; text-align: center; border: 1px solid #e9ecef; border-top: none; background: #f8f9fa; border-radius: 0 0 6px 6px;">
+                <p style="color: #6c757d; margin: 0;">📭 No data in this sheet</p>
+            </div>
+            {{ end }}
+        </div>
+        {{ end }}
+
+        <!-- Summary -->
+        <div style="margin-top: 15px; padding: 12px; background: #e7f3ff; border-radius: 6px; border-left: 4px solid #2196f3; font-size: 13px;">
+            <strong>📈 Summary:</strong> 
+            {{ len .sheets }} sheet(s) • 
+            {{ $totalRows := 0 }}{{ range .sheets }}{{ $totalRows = add $totalRows .RowCount }}{{ end }}{{ $totalRows }} total rows
+        </div>
+
+    {{ else }}
+        <div style="padding: 30px; text-align: center; background: #f8f9fa; border-radius: 6px;">
+            <p style="color: #6c757d; margin: 0;">📭 No data available</p>
+        </div>
+    {{ end }}
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button onclick="closePreview()" 
+                style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">
+            ❌ Close
+        </button>
+        <a href="/download/{{ .filename }}" 
+           style="background: #28a745; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 13px;">
+            📥 Download
+        </a>
+    </div>
+</div>
+
+<script>
+function switchSheet(sheetIndex) {
+    // Hide all sheets
+    document.querySelectorAll('.sheet-container').forEach(container => {
+        container.style.display = 'none';
+    });
+    // Show selected sheet
+    const selectedSheet = document.getElementById('sheet-' + sheetIndex);
+    if (selectedSheet) {
+        selectedSheet.style.display = 'block';
+    }
+}
+
+function closePreview() {
+    // Clear the iframe content
+    if (window.parent && window.parent.document.getElementById('viewer')) {
+        window.parent.document.getElementById('viewer').innerHTML = '<div style="text-align: center; padding: 50px; color: #666;"><p>👆 Select a file to preview it here</p></div>';
+    }
+}
+
+// Add keyboard shortcut to close with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closePreview();
+    }
+});
+</script>

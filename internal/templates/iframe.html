@@ -1,0 +1,29 @@
+<div style="padding: 20px;">
+    <h3>Preview: {{ .filename }}</h3>
+    
+    {{ if .isPDF }}
+    <div style="text-align: center;">
+        <embed src="/raw/{{ .filename }}" type="application/pdf" width="100%" height="600px">
+        <br><br>
+        <a href="/download/{{ .filename }}" class="download-btn">Download PDF</a>
+    </div>
+    {{ else if .isHTML }}
+    <div style="text-align: center;">
+        <iframe src="/raw/{{ .filename }}" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
+        <br><br>
+        <a href="/download/{{ .filename }}" class="download-btn">Download HTML</a>
+    </div>
+    {{ else if .isExcel }}
+    <div hx-get="/excel/{{ .filename }}" hx-trigger="load" hx-target="this">
+        <p>Loading Excel data...</p>
+    </div>
+    {{ else }}
+    <div style="text-align: center; padding: 50px;">
+        <p>Preview not available for this file type.</p>
+        <a href="/download/{{ .filename }}" class="download-btn">Download File</a>
+    </div>
+    {{ end }}
+    
+    <br>
+    <button onclick="document.getElementById('viewer').innerHTML = '<p>👆 Select a file to preview</p>'">Close Preview</button>
+</div>

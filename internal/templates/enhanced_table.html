@@ -1,0 +1,252 @@
+<!-- <!DOCTYPE html> -->
+<!-- <html> -->
+<!-- <head> -->
+<!--     <title>Enhanced Excel Table</title> -->
+<!--     <style> -->
+<!--         body {  -->
+<!--             font-family: Arial, sans-serif;  -->
+<!--             margin: 0; -->
+<!--             padding: 20px; -->
+<!--             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -->
+<!--             min-height: 100vh; -->
+<!--         } -->
+<!--         .container { -->
+<!--             max-width: 1400px; -->
+<!--             margin: 0 auto; -->
+<!--             background: white; -->
+<!--             padding: 30px; -->
+<!--             border-radius: 15px; -->
+<!--             box-shadow: 0 10px 30px rgba(0,0,0,0.2); -->
+<!--         } -->
+<!--         .header { -->
+<!--             background: linear-gradient(135deg, #007bff, #0056b3); -->
+<!--             color: white; -->
+<!--             padding: 25px; -->
+<!--             border-radius: 10px; -->
+<!--             margin-bottom: 25px; -->
+<!--             text-align: center; -->
+<!--         } -->
+<!--         .header h1 { -->
+<!--             margin: 0; -->
+<!--             font-size: 2.2em; -->
+<!--             display: flex; -->
+<!--             align-items: center; -->
+<!--             justify-content: center; -->
+<!--             gap: 15px; -->
+<!--         } -->
+<!--         .summary { -->
+<!--             background: #e7f3ff; -->
+<!--             padding: 15px; -->
+<!--             border-radius: 8px; -->
+<!--             margin-bottom: 20px; -->
+<!--             border-left: 4px solid #007bff; -->
+<!--         } -->
+<!--         .table-container { -->
+<!--             overflow-x: auto; -->
+<!--             border: 2px solid #e9ecef; -->
+<!--             border-radius: 8px; -->
+<!--             margin-bottom: 20px; -->
+<!--         } -->
+<!--         table { -->
+<!--             width: 100%; -->
+<!--             border-collapse: collapse; -->
+<!--             min-width: 800px; -->
+<!--         } -->
+<!--         th { -->
+<!--             background: linear-gradient(135deg, #495057, #6c757d); -->
+<!--             color: white; -->
+<!--             padding: 15px; -->
+<!--             text-align: left; -->
+<!--             font-weight: bold; -->
+<!--             border: 1px solid #dee2e6; -->
+<!--             position: sticky; -->
+<!--             top: 0; -->
+<!--         } -->
+<!--         td { -->
+<!--             padding: 12px; -->
+<!--             border: 1px solid #dee2e6; -->
+<!--             color: #495057; -->
+<!--         } -->
+<!--         tr:nth-child(even) { -->
+<!--             background: #f8f9fa; -->
+<!--         } -->
+<!--         tr:hover { -->
+<!--             background: #e3f2fd; -->
+<!--             transform: translateY(-1px); -->
+<!--             transition: all 0.2s; -->
+<!--         } -->
+<!--         .row-number { -->
+<!--             background: #e9ecef; -->
+<!--             color: #6c757d; -->
+<!--             font-weight: bold; -->
+<!--             text-align: center; -->
+<!--             width: 60px; -->
+<!--         } -->
+<!--         .action-buttons { -->
+<!--             display: flex; -->
+<!--             gap: 12px; -->
+<!--             flex-wrap: wrap; -->
+<!--             margin-top: 25px; -->
+<!--         } -->
+<!--         .btn { -->
+<!--             padding: 12px 24px; -->
+<!--             border: none; -->
+<!--             border-radius: 6px; -->
+<!--             cursor: pointer; -->
+<!--             font-size: 14px; -->
+<!--             text-decoration: none; -->
+<!--             display: inline-flex; -->
+<!--             align-items: center; -->
+<!--             gap: 8px; -->
+<!--             transition: all 0.3s; -->
+<!--         } -->
+<!--         .btn-danger { -->
+<!--             background: #dc3545; -->
+<!--             color: white; -->
+<!--         } -->
+<!--         .btn-danger:hover { -->
+<!--             background: #c82333; -->
+<!--             transform: translateY(-2px); -->
+<!--         } -->
+<!--         .btn-success { -->
+<!--             background: #28a745; -->
+<!--             color: white; -->
+<!--         } -->
+<!--         .btn-success:hover { -->
+<!--             background: #218838; -->
+<!--             transform: translateY(-2px); -->
+<!--         } -->
+<!--         .btn-info { -->
+<!--             background: #17a2b8; -->
+<!--             color: white; -->
+<!--         } -->
+<!--         .btn-info:hover { -->
+<!--             background: #138496; -->
+<!--             transform: translateY(-2px); -->
+<!--         } -->
+<!--         .json-viewer { -->
+<!--             background: #1a1a1a; -->
+<!--             color: #00ff00; -->
+<!--             padding: 20px; -->
+<!--             border-radius: 8px; -->
+<!--             margin-top: 20px; -->
+<!--             font-family: 'Courier New', monospace; -->
+<!--             font-size: 12px; -->
+<!--             max-height: 400px; -->
+<!--             overflow-y: auto; -->
+<!--             display: none; -->
+<!--         } -->
+<!--         .toggle-btn { -->
+<!--             background: #6c757d; -->
+<!--             color: white; -->
+<!--             border: none; -->
+<!--             padding: 10px 20px; -->
+<!--             border-radius: 6px; -->
+<!--             cursor: pointer; -->
+<!--             margin-bottom: 10px; -->
+<!--         } -->
+<!--     </style> -->
+<!-- </head> -->
+<!-- <body> -->
+<!--     <div class="container"> -->
+<!--         <div class="header"> -->
+<!--             <h1>📊 Excel Data Viewer</h1> -->
+<!--             <p style="margin: 10px 0 0 0; opacity: 0.9;">Interactive table view with JSON conversion</p> -->
+<!--         </div> -->
+<!---->
+<!--         {{ if .Rows }} -->
+<!--             <div class="summary"> -->
+<!--                 <strong>📈 Data Summary:</strong>  -->
+<!--                 {{ len .Rows }} total rows •  -->
+<!--                 {{ if gt (len .Rows) 0 }}{{ len (index .Rows 0) }} columns{{ end }} -->
+<!--             </div> -->
+<!---->
+<!--             <button class="toggle-btn" onclick="toggleJSON()">📄 Toggle JSON View</button> -->
+<!---->
+<!--             <div class="json-viewer" id="jsonViewer"> -->
+<!--                 <pre id="jsonContent">{{ .Rows | toJson }}</pre> -->
+<!--             </div> -->
+<!---->
+<!--             <div class="table-container"> -->
+<!--                 <table> -->
+<!--                     <thead> -->
+<!--                         <tr> -->
+<!--                             <th class="row-number">#</th> -->
+<!--                             {{ range $index, $cell := index .Rows 0 }} -->
+<!--                             <th>Column {{ add $index 1 }}{{ if ne $cell "" }}: {{ $cell }}{{ end }}</th> -->
+<!--                             {{ end }} -->
+<!--                         </tr> -->
+<!--                     </thead> -->
+<!--                     <tbody> -->
+<!--                         {{ range $rowIndex, $row := .Rows }} -->
+<!--                             {{ if gt $rowIndex 0 }} -->
+<!--                             <tr> -->
+<!--                                 <td class="row-number">{{ $rowIndex }}</td> -->
+<!--                                 {{ range $row }} -->
+<!--                                 <td>{{ . }}</td> -->
+<!--                                 {{ end }} -->
+<!--                             </tr> -->
+<!--                             {{ end }} -->
+<!--                         {{ end }} -->
+<!--                     </tbody> -->
+<!--                 </table> -->
+<!--             </div> -->
+<!---->
+<!--             <div class="action-buttons"> -->
+<!--                 <button class="btn btn-danger" onclick="closeViewer()">❌ Close Viewer</button> -->
+<!--                 <a href="/" class="btn btn-success">🏠 Go Home</a> -->
+<!--                 <button class="btn btn-info" onclick="downloadJSON()">💾 Download JSON</button> -->
+<!--             </div> -->
+<!--         {{ else }} -->
+<!--             <div style="text-align: center; padding: 50px;"> -->
+<!--                 <h2 style="color: #6c757d;">📭 No Data Available</h2> -->
+<!--                 <p>The Excel file appears to be empty or couldn't be processed.</p> -->
+<!--                 <a href="/" class="btn btn-success">🏠 Go Home</a> -->
+<!--             </div> -->
+<!--         {{ end }} -->
+<!--     </div> -->
+<!---->
+<!--     <script> -->
+<!--         function toggleJSON() { -->
+<!--             const viewer = document.getElementById('jsonViewer'); -->
+<!--             viewer.style.display = viewer.style.display === 'none' ? 'block' : 'none'; -->
+<!--         } -->
+<!---->
+<!--         function closeViewer() { -->
+<!--             // If we're in an iframe, clear the parent viewer -->
+<!--             if (window.parent && window.parent.document.getElementById('viewer')) { -->
+<!--                 window.parent.document.getElementById('viewer').innerHTML = '<p>👆 Select a file to preview</p>'; -->
+<!--             } else { -->
+<!--                 window.history.back(); -->
+<!--             } -->
+<!--         } -->
+<!---->
+<!--         function downloadJSON() { -->
+<!--             const jsonContent = document.getElementById('jsonContent').textContent; -->
+<!--             const blob = new Blob([jsonContent], { type: 'application/json' }); -->
+<!--             const url = URL.createObjectURL(blob); -->
+<!--             const a = document.createElement('a'); -->
+<!--             a.href = url; -->
+<!--             a.download = 'excel-data.json'; -->
+<!--             document.body.appendChild(a); -->
+<!--             a.click(); -->
+<!--             document.body.removeChild(a); -->
+<!--             URL.revokeObjectURL(url); -->
+<!--         } -->
+<!---->
+<!--         // Add some interactivity -->
+<!--         document.addEventListener('DOMContentLoaded', function() { -->
+<!--             // Add click effects to table rows -->
+<!--             const rows = document.querySelectorAll('tbody tr'); -->
+<!--             rows.forEach(row => { -->
+<!--                 row.addEventListener('click', function() { -->
+<!--                     this.style.backgroundColor = '#d1ecf1'; -->
+<!--                     setTimeout(() => { -->
+<!--                         this.style.backgroundColor = ''; -->
+<!--                     }, 1000); -->
+<!--                 }); -->
+<!--             }); -->
+<!--         }); -->
+<!--     </script> -->
+<!-- </body> -->
+<!-- </html> -->

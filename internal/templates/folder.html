@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Browser</title>
+    <script src="https://unpkg.com/htmx.org@2.0.1"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .breadcrumb {
+            background: #e9ecef;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px 6px 0 0;
+            margin: 0;
+            font-size: 16px;
+        }
+        .item-list {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+        }
+        .item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .item:hover {
+            background: #f8f9fa;
+        }
+        .folder-icon {
+            color: #ffc107;
+            font-size: 18px;
+        }
+        .file-icon {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        .excel-icon {
+            color: #28a745;
+        }
+        .pdf-icon {
+            color: #dc3545;
+        }
+        .html-icon {
+            color: #007bff;
+        }
+        .item-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+        }
+        .btn-preview {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+        #viewer {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
+            margin-top: 20px;
+            border-radius: 4px;
+            background: white;
+        }
+        .empty-message {
+            padding: 30px;
+            text-align: center;
+            color: #6c757d;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 File Browser</h1>
+        
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb">
+            <a href="/folder/">Home</a>
+            {{ if ne .currentPath "/" }}
+                {{ $path := "" }}
+                {{ range split .currentPath "/" }}
+                    {{ if . }}
+                        {{ $path = pathJoin $path . }}
+                        / <a href="/folder/{{ $path }}">{{ . }}</a>
+                    {{ end }}
+                {{ end }}
+            {{ end }}
+        </div>
+
+        {{ if .error }}
+            <div class="error">
+                <strong>Error:</strong> {{ .error }}
+            </div>
+        {{ end }}
+
+        <!-- Folders Section -->
+        <div class="section">
+            <h2 class="section-title">📂 Folders ({{ len .folders }})</h2>
+            {{ if .folders }}
+            <div class="item-list">
+                {{ range .folders }}
+                <div class="item">
+                    <span class="folder-icon">📁</span>
+                    <span class="item-name">{{ . }}</span>
+                    <div class="item-actions">
+                        <a href="/folder/{{ pathJoin $.currentPath . }}" class="btn btn-preview">Open</a>
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+            {{ else }}
+            <div class="empty-message">
+                No subfolders in this directory
+            </div>
+            {{ end }}
+        </div>
+
+        <!-- Files Section -->
+        <div class="section">
+            <h2 class="section-title">📄 Files ({{ len .files }})</h2>
+            {{ if .files }}
+            <div class="item-list">
+                {{ range .files }}
+                <div class="item">
+                    {{ $ext := getFileExtension . }}
+                    {{ if eq $ext "xlsx" "xls" }}
+                        <span class="file-icon excel-icon">📊</span>
+                    {{ else if eq $ext "pdf" }}
+                        <span class="file-icon pdf-icon">📄</span>
+                    {{ else if eq $ext "html" "htm" }}
+                        <span class="file-icon html-icon">🌐</span>
+                    {{ else }}
+                        <span class="file-icon">📎</span>
+                    {{ end }}
+                    <span class="item-name">{{ . }}</span>
+                    <div class="item-actions">
+                        <button class="btn btn-preview" 
+                                hx-get="/iframe/{{ pathJoin $.currentPath . }}" 
+                                hx-target="#viewer">
+                            Preview
+                        </button>
+                        <a href="/download/{{ pathJoin $.currentPath . }}" class="btn btn-download">
+                            Download
+                        </a>
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+            {{ else }}
+            <div class="empty-message">
+                No files in this directory
+            </div>
+            {{ end }}
+        </div>
+
+        <!-- Preview Area -->
+        <div id="viewer">
+            <div style="text-align: center; padding: 50px; color: #666;">
+                <p>👆 Select a file to preview it here</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

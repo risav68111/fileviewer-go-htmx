@@ -1,0 +1,18 @@
+
+{{ define "content" }}
+<h2>Found Files</h2>
+<table border="1" cellpadding="8" cellspacing="0">
+  {{ range .Files }}
+  <tr>
+    <td><button hx-get="/iframe/{{ . }}" hx-target="#viewer">Preview</button></td>
+    <td>{{ . }}</td>
+    <td><a href="/excel/{{ . }}" target="_blank">Table View</a></td>
+    <td><a href="/download/{{ . }}">Download</a></td>
+  </tr>
+  {{ end }}
+</table>
+
+<div id="viewer" style="width:100%; height:700px; margin-top:20px; border:2px solid #333; background:#fafafa;">
+    <p style="text-align:center; padding-top:300px; color:#999;">Click Preview to load file</p>
+</div>
+{{ end }}
