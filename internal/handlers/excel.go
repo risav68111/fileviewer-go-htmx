@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"filesviewer/internal/services"
+	"github.com/risav68111/filesviewer-go-htmx/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

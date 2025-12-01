@@ -6,13 +6,23 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
+	"os"
 
-	"filesviewer/internal/handlers"
+  "github.com/risav68111/filesviewer-go-htmx/internal/handlers"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
+
+	port := os.Getenv("PORT")
+	if port == "" {
+			port = "8080"
+	}
+
+	log.Println("Server starting on :" + port)
+	r.Run(":" + port)
+
 
 	// Add template functions
 	r.SetFuncMap(template.FuncMap{
